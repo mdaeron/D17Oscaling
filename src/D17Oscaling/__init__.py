@@ -4,9 +4,29 @@ import uncertainties as uc
 from uncertainties import unumpy as unp
 
 class DataSet():
-	def __init__(self, filepath):
-		self.analyses = pd.read_csv(filepath).rename(columns={'d18O': 'd18O_raw', 'D17O': 'D17O_raw'})
+	def __init__(self):
+		pass
+
+	def import_analyses(self, filepath, columns = {}):
+		self.analyses = pd.read_csv(filepath).rename(columns = columns)
 		self.compile()
+
+	def import_analytes(self, filepath, columns = {}):
+		self.analytes = pd.read_csv(
+			filepath,
+			converters = {
+				"d18O": uc.ufloat_fromstr,
+				"d18O_raw": uc.ufloat_fromstr,
+				"D17O": uc.ufloat_fromstr,
+				"D17O_raw": uc.ufloat_fromstr,
+			},
+		).rename(columns = columns).set_index('Analyte')
+
+	def export_analyses(self, filepath):
+		self.analyses.to_csv(filepath, index = False)
+
+	def export_analytes(self, filepath):
+		self.analytes.to_csv(filepath)
 
 	def __repr__(self):
 		v = vars(self)
@@ -53,7 +73,10 @@ class DataSet():
 	def normalize(self, refmaterials, λ = 0.528):
 
 		# populate self.refmaterials
-		loa = self.analyses["Analyte"].unique().tolist()
+		if hasattr(self, 'analytes'):
+			loa = self.analytes.index.tolist()
+		else:
+			loa = self.analyses["Analyte"].unique().tolist()
 		self.refmaterials = {k:v for k,v in refmaterials.items() if k in loa}
 
 		# compute d17O of refmaterials
@@ -109,10 +132,18 @@ class DataSet():
 
 if __name__ == '__main__':
 
-	data = DataSet('examples/data.csv')
-	data.normalize({
+	RM = {
 		'VSMOW': {'d18O': 0., 'D17O': 0.},
 		'SLAP': {'d18O': -55.5, 'D17O': 0.},
 		# 'FOO': {'d18O': -12.5, 'D17O': -0.1},
-	})
+	}
+	data = DataSet()
+	data.import_analyses('examples/data.csv', columns = dict(d18O = 'd18O_raw', D17O = 'D17O_raw'))
+	data.normalize(RM)
+	print(data)
+	data.export_analyses('examples/analyses.csv')
+	data.export_analytes('examples/analytes.csv')
+	data = DataSet()
+	data.import_analytes('examples/analytes.csv')
+	data.normalize(RM)
 	print(data)
