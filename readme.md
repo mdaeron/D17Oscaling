@@ -170,7 +170,7 @@ print(data)
 ```
 
 <p align="center">
-  <b><font size="18">⬇️</font></b>
+  <b><font size="72">⬇️</font></b>
 </p>
 
 ```txt
