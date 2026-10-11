@@ -45,6 +45,10 @@ data.import_analyses(
 print(data)
 ```
 
+<p align="center">
+  <img src="warm-arrow-down.png" width="60" alt="down arrow">
+</p>
+
 This should look like this.
 - The raw data we just imported is stored as a `pandas.DataFrame` in `data.analyses`.
 - The pooled standard deviantion of `d18O_raw` and `D17O_raw` for this dataset is stored as `data.SD_d18O_raw` and `data.SD_D17O_raw`.
@@ -93,6 +97,10 @@ We can then normalize `data.analytes` based on the nominal compositions of the r
 data.normalize(RM)
 print(data)
 ```
+
+<p align="center">
+  <img src="warm-arrow-down.png" width="60" alt="down arrow">
+</p>
 
 As seen below, this adds two columns named `d18O` and `D17O` to `data.analytes`, corresponding to the normalized compositions of each analyte. These values are all `uncertainties.UFloat` values, so that their correlated uncertainties are all explictly computed and accessible using the methods described in the [uncertainties documentation](https://pythonhosted.org/uncertainties). The parameters *a*<sub>18</sub>, *b*<sub>18</sub>, *a*<sub>17</sub>, and *b*<sub>17</sub> (see equations above) are also stored as `uncertainties.UFloat` values in `data.a18`, `data.b18`, `data.a17`, and `data.b17`.
 
@@ -147,7 +155,9 @@ data.import_analytes('examples/analytes.csv')
 print(data)
 ```
 
-yielding:
+<p align="center">
+  <img src="warm-arrow-down.png" width="60" alt="down arrow">
+</p>
 
 ```txt
 DataSet(
