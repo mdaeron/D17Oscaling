@@ -170,7 +170,7 @@ print(data)
 ```
 
 <p align="center">
-  ![down arrow](warm-arrow-down.png)
+  <img src="warm-arrow-down.png" width="60" alt="down arrow">
 </p>
 
 ```txt
