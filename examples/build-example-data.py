@@ -1,5 +1,6 @@
 import numpy as np
 import pandas as pd
+import D17Oscaling
 
 rng = np.random.default_rng(seed=42)
 sigmad18O = 0.10
@@ -32,3 +33,13 @@ df = pd.DataFrame(data)
 print(df)
 
 df.to_csv("examples/data.csv", index=False)
+
+data = D17Oscaling.DataSet()
+data.import_analyses(
+	'examples/data.csv',
+	columns = {
+		'd18O': 'd18O_raw',
+		'D17O': 'D17O_raw'
+	},
+)
+data.export_analytes("examples/analytes.csv")

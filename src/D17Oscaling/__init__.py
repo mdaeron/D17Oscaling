@@ -1,11 +1,24 @@
 import numpy as np
 import pandas as pd
 import uncertainties as uc
+
+from pprint import pprint
 from uncertainties import unumpy as unp
 
 class DataSet():
+
 	def __init__(self):
 		pass
+
+	def __repr__(self):
+		s = vars(self)
+		_ = []
+		for a, v in s.items():
+			if '\n' in str(v):
+				_ += ['  '+f'[{a}] =\n{v}'.replace('\n', '\n    ')]
+			else:
+				_ += [f'  [{a}] = {v}']
+		return 'DataSet(\n' + '\n'.join(_) + '\n)'
 
 	def import_analyses(self, filepath, columns = {}):
 		self.analyses = pd.read_csv(filepath).rename(columns = columns)
@@ -27,14 +40,6 @@ class DataSet():
 
 	def export_analytes(self, filepath):
 		self.analytes.to_csv(filepath)
-
-	def __repr__(self):
-		v = vars(self)
-		_ = 'DataSet('
-		for a in v:
-			_ += f'\n  {a} = {getattr(self, a)}'
-		_ += '\n)'
-		return _
 
 	def compile(self):
 
@@ -81,7 +86,7 @@ class DataSet():
 
 		# compute d17O of refmaterials
 		for m in refmaterials.values():
-			m['d17O'] = 1000 * (
+			m['d17O'] = 1000 * float(
 				np.exp(m['D17O']/1000)
 				* (1 + m['d18O']/1000) ** λ
 				- 1
