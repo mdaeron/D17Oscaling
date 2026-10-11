@@ -169,7 +169,9 @@ data.normalize(RM)
 print(data)
 ```
 
-## ⬇️
+<p align="center">
+  <b><font size="18">⬇️</font></b>
+</p>
 
 ```txt
 DataSet(
