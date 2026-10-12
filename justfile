@@ -3,3 +3,6 @@ main:
 
 build-example-data:
 	uv run examples/build-example-data.py
+
+build:
+	uv build

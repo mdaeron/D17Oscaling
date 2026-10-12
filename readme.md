@@ -99,7 +99,7 @@ print(data)
 ```
 
 <p align="center">
-  <img src="warm-arrow-down.png" width="60" alt="down arrow">
+  <img src="https://raw.githubusercontent.com/mdaeron/D17Oscaling/refs/heads/master/warm-arrow-down.png" alt="down arrow">
 </p>
 
 As seen below, this adds two columns named `d18O` and `D17O` to `data.analytes`, corresponding to the normalized compositions of each analyte. These values are all `uncertainties.UFloat` values, so that their correlated uncertainties are all explictly computed and accessible using the methods described in the [uncertainties documentation](https://pythonhosted.org/uncertainties). The parameters *a*<sub>18</sub>, *b*<sub>18</sub>, *a*<sub>17</sub>, and *b*<sub>17</sub> (see equations above) are also stored as `uncertainties.UFloat` values in `data.a18`, `data.b18`, `data.a17`, and `data.b17`.
