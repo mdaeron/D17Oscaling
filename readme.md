@@ -1,5 +1,8 @@
 # D17Oscaling
 
+[![PyPI Version](https://img.shields.io/pypi/v/D17Oscaling.svg)](https://pypi.python.org/pypi/D17Oscaling)
+![License](https://img.shields.io/pypi/l/D17Oscaling)
+
 Perform two-point normalization of triple oxygen isotope measurements based on two or more reference materials with sufficiently different δ18O values.
 
 The normalization applies two affine transformations:
