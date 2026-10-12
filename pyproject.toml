@@ -1,6 +1,6 @@
 [project]
 name = "D17Oscaling"
-version = "1.0.0"
+version = "1.1.0"
 description = "Perform two-point normalization of triple oxygen isotope measurements based on two or more reference materials"
 readme = "readme.md"
 license = "MIT"
