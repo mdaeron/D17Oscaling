@@ -1,3 +1,26 @@
+"""
+Perform two-point normalization of triple oxygen isotope measurements
+based on two or more reference materials with sufficiently different δ18O values.
+
+The normalization applies two affine transformations:
+
+  * δ18O_new = a_18 ∙ δ18O_old + b_18
+  * δ17O_new = a_17 ∙ δ17O_old + b_17
+
+Provided with:
+  (1) a set of measurements of one or more unknown samples, with uncertainties;
+  (2) a set of measurement of two or more known reference materials, with uncertaines;
+  (3) nominal (δ18O, Δ17O) values for the reference materials,
+`D17Oscaling` computes the normalized (δ18O, Δ17O) values for all unknown samples
+and the variance-covariance matrix describing the (correlated) uncertainties of these
+normalized values.
+
+`D17Oscaling` is also capable of processing a list of “raw” individual (δ18O, Δ17O)
+analyses, compute the average composition of each sample and assign uncertainties
+to these average compositions based on the pooled variances of all δ18O and all Δ17O
+measurements, respectively.
+"""
+
 import numpy as np
 import pandas as pd
 import uncertainties as uc
@@ -5,7 +28,13 @@ import uncertainties as uc
 from pprint import pprint
 from uncertainties import unumpy as unp
 
-class DataSet():
+class DataSet:
+	"""
+	Store a table of individual analyses with starting ("raw") (δ18O, Δ17O) measurements
+	and/or a table of analytes with starting (δ18O, Δ17O) compositions, with uncertainties.
+	Provides methods to compile analytes from analyses, and to normalize the analyte
+	compositions based on two or more reference materials.
+	"""
 
 	def __init__(self):
 		pass
@@ -21,10 +50,50 @@ class DataSet():
 		return 'DataSet(\n' + '\n'.join(_) + '\n)'
 
 	def import_analyses(self, filepath, columns = {}):
+		"""
+		Read a CSV file with the following required fields:
+			- `Analyte` (string)
+			- `d18O_raw` (float-interpretable string, e.g., '-12.34')
+			- `D17O_raw` (float-interpretable string, e.g., '0.1234')
+
+		Arguments:
+			* `filepath`: path of CSV file to import
+			* `columns`: a dict of {new: old} column names
+			(used to convert columns from the CSV to different names in the DataSet)
+
+		Example:
+			```
+			data = DataSet()
+			data.import_analyses(
+				'data.csv',
+				columns = {'d18O': 'd18O_raw', 'D17O': 'D17O_raw'},
+			)
+			```
+		"""
 		self.analyses = pd.read_csv(filepath).rename(columns = columns)
 		self.compile()
 
 	def import_analytes(self, filepath, columns = {}):
+		"""
+		Read a CSV file with the following required fields:
+			- `Analyte` (string)
+			- `d18O_raw` (UFloat-interpretable string, e.g., '-12.34±0.56')
+			- `D17O_raw` (UFloat-interpretable string, e.g., '0.1234±0.0056')
+
+		Arguments:
+			* `filepath`: path of CSV file to import
+			* `columns`: a dict of {new: old} column names
+			(used to convert columns from the CSV to different names in the DataSet)
+
+		Example:
+			```
+			data = DataSet()
+			data.import_analytes(
+				'data.csv',
+				columns = {'d18O': 'd18O_raw', 'D17O': 'D17O_raw'},
+			)
+			```
+		"""
 		self.analytes = pd.read_csv(
 			filepath,
 			converters = {
@@ -36,12 +105,20 @@ class DataSet():
 		).rename(columns = columns).set_index('Analyte')
 
 	def export_analyses(self, filepath):
+		"Save `analyses` dataframe to CSV file"
 		self.analyses.to_csv(filepath, index = False)
 
 	def export_analytes(self, filepath):
+		"Save `analytes` dataframe to CSV file"
 		self.analytes.to_csv(filepath)
 
 	def compile(self):
+		"""
+		Generate `analytes` dataframe based on the `analyses` dataframe.
+		The δ18O and Δ17O values of each analyte are assigned based on the average over all analyses,
+		with uncertainties equal to σ/sqrt(N), with σ being the pooled standard deviation of that field
+		over all analytes and N being the number of analyses being averaged for this particular analyte.
+		"""
 
 		# compute pooled SD of d18O
 		g = self.analyses.groupby('Analyte')['d18O_raw']
@@ -76,6 +153,22 @@ class DataSet():
 			]
 
 	def normalize(self, refmaterials, λ = 0.528):
+		"""
+		Nornalize the `analytes` dataframe based on two or more reference materials.
+
+		Arguments:
+			* refmaterials: a dict of nominal values of the form:
+				{
+					'VSMOW': {'d18O': 0., 'D17O': 0.},
+					'SLAP': {'d18O': -55.5, 'D17O': 0.},
+				}
+			* λ (default = 0.528): the triple oxygen exponent used to compute Δ17O from (δ17O, δ18O)
+
+		The normalized δ18O and Δ17O values are saved as UFloats in columns `d18O` and `D17O` of the
+		`analytes` dataframe, and these UFloats are correlated as a result of the normalization corrections.
+		Also saves `a18`, `b18`, `a17` and `b17` (all floats) corresponding to the affine transformations
+		applied to `d18O_raw` and  `d17O_raw`, respectively.
+		"""
 
 		# populate self.refmaterials
 		if hasattr(self, 'analytes'):
@@ -134,21 +227,3 @@ class DataSet():
 			unp.log(1 + self.analytes['d17O']/1000)
 			- λ * unp.log(1 + self.analytes['d18O']/1000)
 		)
-
-if __name__ == '__main__':
-
-	RM = {
-		'VSMOW': {'d18O': 0., 'D17O': 0.},
-		'SLAP': {'d18O': -55.5, 'D17O': 0.},
-		# 'FOO': {'d18O': -12.5, 'D17O': -0.1},
-	}
-	data = DataSet()
-	data.import_analyses('examples/data.csv', columns = dict(d18O = 'd18O_raw', D17O = 'D17O_raw'))
-	data.normalize(RM)
-	print(data)
-	data.export_analyses('examples/analyses.csv')
-	data.export_analytes('examples/analytes.csv')
-	data = DataSet()
-	data.import_analytes('examples/analytes.csv')
-	data.normalize(RM)
-	print(data)
